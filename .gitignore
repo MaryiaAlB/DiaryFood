@@ -1,0 +1,91 @@
+# ==========================================
+# ASP.NET / .NET
+# ==========================================
+
+# Бинарные файлы сборки
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Пользовательские файлы Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Кэш и файлы Rider / JetBrains
+.idea/
+*.sln.iml
+
+# Файлы VS Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Результаты тестов
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+*.trx
+*.coverage
+*.coveragexml
+
+# NuGet
+*.nupkg
+*.snupkg
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+*.nuget.props
+*.nuget.targets
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Публикация / деплой
+publish/
+*.pubxml
+*.pubxml.user
+*.publishproj
+*.[Pp]ublish.xml
+
+# Файлы базы данных (SQLite, LocalDB)
+*.mdf
+*.ldf
+*.ndf
+*.db
+*.sqlite
+*.sqlite3
+
+# Секреты и конфиги с паролями
+appsettings.*.local.json
+appsettings.Local.json
+*.env
+.env.*
+
+# Пользовательские настройки
+*.DotSettings.user
+
+# Временные файлы
+*.tmp
+*.temp
+*.cache
+*.log
+*~
+*.swp
+
+# Файлы ОС
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Прочее
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db 
