@@ -1,6 +1,8 @@
 ﻿using DiaryFood.DTOs;
 using DiaryFood.Models;
+using DiaryFood.Data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace DiaryFood.Controller;
 
@@ -8,87 +10,109 @@ namespace DiaryFood.Controller;
 [Route("api/[controller]")]
 public class ProductController : ControllerBase
 {
-    public static readonly List<Product> _productOfList = new List<Product>();
-    public static int _count = 0;
+    private readonly ApplicationDbContext _context;
+
+    public ProductController(ApplicationDbContext context) {
+        _context = context;
+    }
+
+
 
     [HttpGet]
-    public ActionResult<IEnumerable<ProductDto>> GetAllProduct() { 
-        var productsDto = _productOfList.Select(p=> new ProductDto { 
+    public async Task<ActionResult<IEnumerable<ProductDto>>> GetAllProduct()
+    { 
+        var productsDto = await _context.Products
+            .Select(p=> new ProductDto 
+            { 
                         Id = p.Id,
                         Name = p.Name,
                         Calories = p.Calories,
                         Protein = p.Protein,
                         Fat = p.Fat,
-                        Carbs = p.Carbs }).ToList();
+                        Carbs = p.Carbs })
+            .ToListAsync();
         return Ok(productsDto);
     }
 
+
+
     [HttpGet("{id}")]
-    public ActionResult<ProductDto> GetIdProduct(int id)
+    public async Task<ActionResult<ProductDto>> GetIdProduct(int id)
     {
-        var product = _productOfList.FirstOrDefault(p => p.Id == id);
-        if (product == null) return NotFound();
-        var productDto = new ProductDto
-            {
-                Id = product.Id,
-                Name = product.Name,
-                Calories = product.Calories,
-                Protein = product.Protein,
-                Fat = product.Fat,
-                Carbs = product.Carbs
-            };
-            return Ok(productDto);       
+        var productDto = await _context.Products.Where(p => p.Id == id)
+           .Select(p => new ProductDto
+           {
+               Id = p.Id,
+               Name = p.Name,
+               Calories = p.Calories,
+               Protein = p.Protein,
+               Fat = p.Fat,
+               Carbs = p.Carbs
+           })
+        .FirstOrDefaultAsync(); // Асинхронно!
+
+        if (productDto == null) return NotFound();
+
+        return Ok(productDto);
     }
 
+
     [HttpPost]
-    public IActionResult AddProduct([FromBody] CreateProductDto createProductDto) {
+    public async Task<IActionResult> AddProduct([FromBody] CreateProductDto createProductDto)
+    {
         var product = new Product
         {
-            Id = ++_count,
             Name = createProductDto.Name,
             Calories = createProductDto.Calories,
             Protein = createProductDto.Protein,
             Fat = createProductDto.Fat,
-            Carbs= createProductDto.Carbs,
+            Carbs = createProductDto.Carbs,
             UserId = createProductDto.UserId
+            
         };
 
-        _productOfList.Add(product);
+        _context.Products.Add(product); // Добавляем в контекст
+        await _context.SaveChangesAsync(); // СОХРАНЯЕМ в базу!
 
-        var productDto = new ProductDto
-        {
-            Id = product.Id,
-            Name = product.Name,
+        // После SaveChangesAsync у product.Id уже есть сгенерированное значение
+        var productDto = new ProductDto { 
+            Id = product.Id, 
+            Name = product.Name, 
             Calories = product.Calories,
-            Protein = product.Protein,
-            Fat = product.Fat,
-            Carbs = product.Carbs
-        };        
-        return CreatedAtAction(nameof(GetIdProduct), new { id = productDto.Id }, productDto);
+        Protein = product.Protein,
+        Fat = product.Fat,
+        Carbs = product.Carbs};
+
+        return CreatedAtAction(nameof(GetIdProduct), new { id = product.Id }, productDto);
     }
 
+
     [HttpDelete("{id}")]
-    public IActionResult DeleteProduct(int id)
+    public async Task<IActionResult> DeleteProduct(int id)
     {
-        var product = _productOfList.FirstOrDefault(p => p.Id == id);
+        var product = await _context.Products.FindAsync(id);
         if (product == null) return NotFound($"Продукт с {id} не найден");
 
-        _productOfList.Remove(product);
+        _context.Products.Remove(product); // Помечаем на удаление
+        await _context.SaveChangesAsync(); // Выполняем DELETE
 
         return NoContent();
     }
 
     [HttpPut("{id}")]
-    public IActionResult UpdateProduct([FromBody] CreateProductDto  product, int id)
+    public async Task<IActionResult> UpdateProduct([FromBody] CreateProductDto productDto, int id)
     {
-        var productUp = _productOfList.FirstOrDefault(p => p.Id == id);
+        var productUp = await _context.Products.FindAsync(id); // Ищем в базе
         if (productUp == null) return NotFound($"Продукт с {id} не найден");
 
-        productUp.Name = product.Name;
-        productUp.Calories = product.Calories;
-        productUp.Protein = product.Protein;
-        productUp.Fat = product.Fat;
-        productUp.Carbs = product.Carbs;
+        // Обновляем поля
+        productUp.Name = productDto.Name;
+        productUp.Calories = productDto.Calories;
+        productUp.Protein = productDto.Protein;
+        productUp.Fat = productDto.Fat;
+        productUp.Carbs = productDto.Carbs;
+
+        await _context.SaveChangesAsync(); // EF Core сам поймет, что мы изменили объект, и сделает UPDATE
 
         return NoContent();
     }

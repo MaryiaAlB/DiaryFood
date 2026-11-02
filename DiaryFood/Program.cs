@@ -1,7 +1,14 @@
+using DiaryFood.Models;
+using DiaryFood.Data;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Добавляем поддержку контроллеров
 builder.Services.AddControllers();
+
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Добавляем генерацию Swagger (OpenAPI)
 builder.Services.AddEndpointsApiExplorer();

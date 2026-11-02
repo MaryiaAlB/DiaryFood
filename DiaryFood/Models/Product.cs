@@ -19,4 +19,4 @@ namespace DiaryFood.Models
         public int UserId { get; set; }
 
     }
-}
+}   
